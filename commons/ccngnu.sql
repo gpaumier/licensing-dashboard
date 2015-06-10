@@ -1,3 +1,5 @@
+/* Number of Commons files tagged with a GNU license template but not with a Creative Commons license template */
+
 use commonswiki_p;
 SELECT count(page_title)
     FROM page, image

@@ -1,3 +1,5 @@
+/* Number of Commons files that are tagged with both a GNU license license template and a Public domain rationale template */
+
 use commonswiki_p;
 SELECT count(page_title)
     FROM page, image
@@ -18,4 +20,3 @@ SELECT count(page_title)
                            )
 
                 );
-
