@@ -16,7 +16,7 @@ var config = require('./config');
 
 // Set up MySQL connection
 
-// The metadata database is available in all slices, so we use the alias for a small wiki, which is expected to be under the less load than the slices used for bigger wikis.
+// The metadata database is available in all slices, so we use the alias for a small wiki, which is expected to be under less load than the slices used for bigger wikis.
 
 var connection = mysql.createConnection({
     host: 'kgwiki.labsdb',
