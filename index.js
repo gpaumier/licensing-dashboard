@@ -36,7 +36,28 @@ function getFilesCountInCategory(wiki, category) {
 
 
 // Test query;
-// query: /w/api.php?action=query&prop=categoryinfo&format=json&titles=Category%3ACC-BY-4.0
 // API sandbox: https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&prop=categoryinfo&format=json&titles=Category%3ACC-BY-4.0
 
 getFilesCountInCategory(commonswiki, 'CC-BY-4.0');
+
+
+function getSiteStatistics(wiki) {
+
+    var params = {
+        action: 'query',
+        meta: 'siteinfo',
+        siprop: 'statistics'
+    };
+
+    var count = 0;
+
+    wiki.api.call(params, function(err, info, next, data) {
+        console.log(info.statistics);
+    });
+}
+
+
+// Test query; /w/api.php?action=query&meta=siteinfo&format=json&siprop=statistics
+// API sandbox: https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&prop=categoryinfo&format=json&titles=Category%3ACC-BY-4.0
+
+getSiteStatistics(commonswiki);
