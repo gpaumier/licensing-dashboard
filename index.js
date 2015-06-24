@@ -12,23 +12,18 @@ var commonswiki = new mw({
     debug: true
 });
 
-function getFilesCountInCategory(wiki, category) {
+function getCategoryInfo(wiki, titles) {
 
     var params = {
         action: 'query',
         prop: 'categoryinfo',
-        titles: 'Category:' + category
+        titles: titles
     };
-
-    var count = 0;
 
     wiki.api.call(params, function(err, info, next, data) {
 
-        var pages = info.pages;
-
-        for (var page in pages) {
-            count = pages[page].categoryinfo.files;
-            console.log(count);
+        for (var page in info.pages) {
+            console.log(info.pages[page]);
         };
 
     });
@@ -38,7 +33,7 @@ function getFilesCountInCategory(wiki, category) {
 // Test query;
 // API sandbox: https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&prop=categoryinfo&format=json&titles=Category%3ACC-BY-4.0
 
-getFilesCountInCategory(commonswiki, 'CC-BY-4.0');
+getCategoryInfo(commonswiki, 'Category:CC-BY-4.0');
 
 
 function getSiteStatistics(wiki) {
