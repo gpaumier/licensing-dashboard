@@ -59,6 +59,28 @@ function getSiteStatistics(wiki) {
 
 //getSiteStatistics(commonswiki);
 
+// For a given set of pages on a given wiki, get the Wikidata IDs of items
+// https://commons.wikimedia.org/wiki/Special:ApiSandbox#action=query&prop=pageprops&format=json&titles=Category%3AFree%20licenses
+
+function getWikidataIDFromPage(wiki, titles) {
+
+    var params = {
+        action: 'query',
+        prop: 'pageprops',
+        titles: titles
+    };
+
+    wiki.api.call(params, function(err, info, next, data) {
+
+        for (var page in info.pages) {
+            console.log(info.pages[page].pageprops.wikibase_item);
+        };
+
+    });
+}
+
+getWikidataIDFromPage(commonswiki, 'Category:Free licenses')
+
 
 // Get site links from Wikidata for given items
 
@@ -76,4 +98,4 @@ function getWikidataSitelinksByIDs(items) {
     });
 }
 
-getWikidataSitelinksByIDs(['Q6310062']);
+//getWikidataSitelinksByIDs(['Q6310062']);
