@@ -21,6 +21,8 @@
   "homepage": "https://github.com/gpaumier/licensing-dashboard#readme",
   "dependencies": {
     "mysql": "^2.7.0",
-    "nodemw": "^0.6.1"
+    "nodemw": "^0.6.1",
+    "request": "^2.58.0",
+    "wikidata-sdk": "0.0.4"
   }
 }
