@@ -79,7 +79,7 @@ function getWikidataIDFromPage(wiki, titles) {
     });
 }
 
-getWikidataIDFromPage(commonswiki, 'Category:Free licenses')
+//getWikidataIDFromPage(commonswiki, 'Category:Free licenses')
 
 
 // Get site links from Wikidata for given items
@@ -99,3 +99,57 @@ function getWikidataSitelinksByIDs(items) {
 }
 
 //getWikidataSitelinksByIDs(['Q6310062']);
+
+function countItems(params){
+    
+}
+
+
+(function main(){
+    var freedom = {
+        free: 0,
+        unfree: 0,
+        mixed: 0
+    }
+
+    countItems({
+        wiki: 'enwiki',
+        category: 'All free media',
+        recurse: false, // TODO: recurse later
+        global: false, // TODO: enable later
+        globalExclude: [
+            'commonswiki'
+        ],
+        target: freedom.free
+    });
+
+    countItems({
+        wiki: 'enwiki',
+        category: 'All non-free media',
+        recurse: false, // TODO: recurse later
+        global: false, // TODO: enable later
+        globalExclude: [
+            'commonswiki'
+        ],
+        target: freedom.unfree
+    });
+
+    // But what about https://en.wikipedia.org/wiki/Category:Wikipedia_free_files
+    // and https://en.wikipedia.org/wiki/Category:Wikipedia_non-free_files ?
+    // Which, incidentally, are the enwiki globals for the following two from Commons.
+
+    countItems({
+        wiki: 'commonswiki',
+        category: 'Free licenses',
+        recurse: false, // TODO: recurse later
+        target: freedom.free
+    });
+
+    countItems({
+        wiki: 'commonswiki',
+        category: 'Unfree copyright statuses',
+        recurse: true,
+        target: freedom.unfree
+    });
+}
+)()
