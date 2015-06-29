@@ -142,7 +142,7 @@ function countItemsGlobal(params){
     });
 
     countItemsGlobal({
-        wiki: 'commonswiki',
+        wiki: 'wikidatawiki',
         qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
         recurse: true, // hierarchical categories
         target: freedom.free
