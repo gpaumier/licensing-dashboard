@@ -101,7 +101,7 @@ function getWikidataSitelinksByIDs(items) {
 
 //getWikidataSitelinksByIDs(['Q6310062']);
 
-function countItems(params){
+function countItemsGlobal(params){
 
 }
 
