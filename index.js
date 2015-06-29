@@ -1,3 +1,4 @@
+
 'use strict';
 
 // Modules
@@ -101,7 +102,7 @@ function getWikidataSitelinksByIDs(items) {
 //getWikidataSitelinksByIDs(['Q6310062']);
 
 function countItems(params){
-    
+
 }
 
 
@@ -112,42 +113,44 @@ function countItems(params){
         mixed: 0
     }
 
-    countItems({
-        wiki: 'enwiki',
-        category: 'All free media',
-        recurse: false, // TODO: recurse later
-        global: false, // TODO: enable later
-        globalExclude: [
-            'commonswiki'
-        ],
+    /*
+    On Wikimedia wikis, files are organized by copyright status according to two different schemes:
+
+    * 'all (un)free media' and similar are all-encompassing flat categories that include all the files in a single category level.
+
+    * 'Wikipedia (un)free files' and similar are hierarchical categories that sort files by license using subcategories, in many category levels.
+
+    Files in flat categories are trivial to count. In hierarchical categories, we need to recurse into all the subcategories.
+
+    Some wikis, like enwiki, combine both approaches so we need to make sure we don't count the files twice on those wikis. Since it's much easier to count membership of flat categories, that method should be preferred if both category structures are available.
+    */
+
+    countItemsGlobal({
+        wiki: 'wikidatawiki',
+        qItem: 'Q6380026', // 'Category:All free media'
+        recurse: false, // Flat categories
+        exclude: [],
         target: freedom.free
     });
 
-    countItems({
-        wiki: 'enwiki',
-        category: 'All non-free media',
-        recurse: false, // TODO: recurse later
-        global: false, // TODO: enable later
-        globalExclude: [
-            'commonswiki'
-        ],
+    countItemsGlobal({
+        wiki: 'wikidatawiki',
+        qItem: 'Q6811831', // 'Category:All non-free media'
+        recurse: false, // Flat categories
+        globalExclude: [],
         target: freedom.unfree
     });
 
-    // But what about https://en.wikipedia.org/wiki/Category:Wikipedia_free_files
-    // and https://en.wikipedia.org/wiki/Category:Wikipedia_non-free_files ?
-    // Which, incidentally, are the enwiki globals for the following two from Commons.
-
-    countItems({
+    countItemsGlobal({
         wiki: 'commonswiki',
-        category: 'Free licenses',
-        recurse: false, // TODO: recurse later
+        qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
+        recurse: true, // hierarchical categories
         target: freedom.free
     });
 
-    countItems({
-        wiki: 'commonswiki',
-        category: 'Unfree copyright statuses',
+    countItemsGlobal({
+        wiki: 'wikidatawiki',
+        qItem: 'Q6805039', // 'Category:Wikipedia non-free files', but also includes [[c:Category:Unfree copyright statuses]]
         recurse: true,
         target: freedom.unfree
     });
