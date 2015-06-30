@@ -6,16 +6,20 @@
 var mw = require('nodemw');
 var wdk = require('wikidata-sdk');
 var request = require('request');
+var getWikis = require('./getWikis')
 
 //
 
-var commonswiki = new mw({
-    server: 'commons.wikimedia.org',
-    path: '/w',
-    debug: true
-});
+function initializeWiki(wikis, wikiDB) {
 
-function getCategoryInfo(wiki, titles) {
+    return new mw({
+        // Get URL from list of wikis and remove 'https://'
+        server: wikis[wikiDB]['url'].slice(8),
+        path: '/w'
+    });
+}
+
+function getCategoryInfo(wiki, titles, done) {
 
     var params = {
         action: 'query',
@@ -24,11 +28,7 @@ function getCategoryInfo(wiki, titles) {
     };
 
     wiki.api.call(params, function(err, info, next, data) {
-
-        for (var page in info.pages) {
-            console.log(info.pages[page]);
-        };
-
+        done(wiki, titles, info.pages);
     });
 }
 
@@ -85,74 +85,116 @@ function getWikidataIDFromPage(wiki, titles) {
 
 // Get site links from Wikidata for given items
 
-function getWikidataSitelinksByIDs(items) {
+function getWikidataSitelinksByID(item, done) {
 
-    var wikidataQueryURL = wdk.getEntities(items, 'en', 'sitelinks', 'json');
+    var wikidataQueryURL = wdk.getEntities([item], 'en', 'sitelinks', 'json');
 
     request(wikidataQueryURL, function(err, response) {
         var entities = JSON.parse(response.body).entities;
+        var siteLinks = entities[item]['sitelinks'];
 
-        for (var item of items) {
-            console.log(entities[item].sitelinks);
-        };
+        for (var site in siteLinks) {
+            // clean up sitelinks to only keep the site ID and the title of the page
+            siteLinks[site] = siteLinks[site]['title']
+        }
 
+        done(siteLinks);
     });
 }
 
 //getWikidataSitelinksByIDs(['Q6310062']);
 
-function countItemsGlobal(params){
+function countItemsGlobal(params, done){
+
+    var count = 0;
+
+    if (params.recurse) {
+        // TODO
+    };
+
+    getWikidataSitelinksByID([params.qItem], function (siteLinks) {
+
+        for (var link in siteLinks){
+
+            var wiki = initializeWiki(params.wikiList, link);
+
+            getCategoryInfo(wiki, siteLinks[link], function (responseWiki, responseCategory, categoryInfo) {
+
+                for (var result in categoryInfo) {
+
+                    var localCount = categoryInfo[result]['categoryinfo']['files']
+
+                    count += localCount;
+                }
+
+                console.log('Added ' + localCount + ' items from ' + responseWiki.server + ':' + responseCategory);
+            });
+        };
+    });
+
 
 }
 
 
 (function main(){
-    var freedom = {
-        free: 0,
-        unfree: 0,
-        mixed: 0
-    }
 
     /*
-    On Wikimedia wikis, files are organized by copyright status according to two different schemes:
-
-    * 'all (un)free media' and similar are all-encompassing flat categories that include all the files in a single category level.
-
-    * 'Wikipedia (un)free files' and similar are hierarchical categories that sort files by license using subcategories, in many category levels.
-
-    Files in flat categories are trivial to count. In hierarchical categories, we need to recurse into all the subcategories.
-
-    Some wikis, like enwiki, combine both approaches so we need to make sure we don't count the files twice on those wikis. Since it's much easier to count membership of flat categories, that method should be preferred if both category structures are available.
+    One of the first things we need to do is get a list of Wikimedia wikis, so we have the information we need in order to query the wikis individually. Each wiki is identified by a unique key named after its database on the cluster.
     */
 
-    countItemsGlobal({
-        wiki: 'wikidatawiki',
-        qItem: 'Q6380026', // 'Category:All free media'
-        recurse: false, // Flat categories
-        exclude: [],
-        target: freedom.free
-    });
+    getWikis.getWikis(function (wikiList){
 
-    countItemsGlobal({
-        wiki: 'wikidatawiki',
-        qItem: 'Q6811831', // 'Category:All non-free media'
-        recurse: false, // Flat categories
-        globalExclude: [],
-        target: freedom.unfree
-    });
+        var freedom = {
+            free: 0,
+            unfree: 0,
+            mixed: 0
+        }
 
-    countItemsGlobal({
-        wiki: 'wikidatawiki',
-        qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
-        recurse: true, // hierarchical categories
-        target: freedom.free
-    });
+        /*
+        On Wikimedia wikis, files are organized by copyright status according to two different schemes:
 
-    countItemsGlobal({
-        wiki: 'wikidatawiki',
-        qItem: 'Q6805039', // 'Category:Wikipedia non-free files', but also includes [[c:Category:Unfree copyright statuses]]
-        recurse: true,
-        target: freedom.unfree
-    });
+        * 'all (un)free media' and similar are all-encompassing flat categories that include all the files in a single category level.
+
+        * 'Wikipedia (un)free files' and similar are hierarchical categories that sort files by license using subcategories, in many category levels.
+
+        Files in flat categories are trivial to count. In hierarchical categories, we need to recurse into all the subcategories.
+
+        Some wikis, like enwiki, combine both approaches so we need to make sure we don't count the files twice on those wikis. Since it's much easier to count membership of flat categories, that method should be preferred if both category structures are available.
+        */
+
+        countItemsGlobal({
+            wikiList: wikiList,
+            wiki: 'wikidatawiki',
+            qItem: 'Q6380026', // 'Category:All free media'
+            recurse: false, // Flat categories
+            exclude: [],
+            target: freedom.free
+        });
+
+        /*
+        countItemsGlobal({
+            wiki: 'wikidatawiki',
+            qItem: 'Q6811831', // 'Category:All non-free media'
+            recurse: false, // Flat categories
+            globalExclude: [],
+            target: freedom.unfree
+        });
+
+        countItemsGlobal({
+            wiki: 'wikidatawiki',
+            qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
+            recurse: true, // hierarchical categories
+            target: freedom.free
+        });
+
+        countItemsGlobal({
+            wiki: 'wikidatawiki',
+            qItem: 'Q6805039', // 'Category:Wikipedia non-free files', but also includes [[c:Category:Unfree copyright statuses]]
+            recurse: true,
+            target: freedom.unfree
+        });
+        */
+
+    })
 }
 )()

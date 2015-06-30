@@ -31,7 +31,7 @@ var connection = mysql.createConnection({
 
 var query = 'SELECT * FROM wiki;';
 
-function getWikis(){
+function getWikis(done){
 
     connection.connect(function(err) {
         if (err) throw err;
@@ -40,6 +40,15 @@ function getWikis(){
     connection.query(query, function(err, rows, fields){
         if (err) throw err;
         console.log('Received ' + rows.length + ' wikis.');
+
+        var wikis = {};
+
+        for (var wiki in rows) {
+            // convert the array to an object, using the dbnames as keys
+            wikis[rows[wiki]['dbname']] = rows[wiki];
+        };
+
+        done(wikis);
     });
 
     connection.end(function(err) {
@@ -47,4 +56,6 @@ function getWikis(){
     });
 }
 
-getWikis();
+//getWikis();
+
+exports.getWikis = getWikis;
