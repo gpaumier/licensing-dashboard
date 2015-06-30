@@ -169,27 +169,32 @@ function countItemsGlobal(params){
             exclude: [],
             target: freedom.free
         });
-
+    
         /*
         countItemsGlobal({
+            wikiList: wikiList,
             wiki: 'wikidatawiki',
             qItem: 'Q6811831', // 'Category:All non-free media'
             recurse: false, // Flat categories
-            globalExclude: [],
+            exclude: [],
             target: freedom.unfree
         });
 
         countItemsGlobal({
+            wikiList: wikiList,
             wiki: 'wikidatawiki',
             qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
             recurse: true, // hierarchical categories
+            exclude: [],
             target: freedom.free
         });
 
         countItemsGlobal({
+            wikiList: wikiList,
             wiki: 'wikidatawiki',
             qItem: 'Q6805039', // 'Category:Wikipedia non-free files', but also includes [[c:Category:Unfree copyright statuses]]
             recurse: true,
+            exclude: [],
             target: freedom.unfree
         });
         */
