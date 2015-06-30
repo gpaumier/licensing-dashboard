@@ -104,9 +104,7 @@ function getWikidataSitelinksByID(item, done) {
 
 //getWikidataSitelinksByIDs(['Q6310062']);
 
-function countItemsGlobal(params, done){
-
-    var count = 0;
+function countItemsGlobal(params){
 
     if (params.recurse) {
         // TODO
@@ -124,10 +122,11 @@ function countItemsGlobal(params, done){
 
                     var localCount = categoryInfo[result]['categoryinfo']['files']
 
-                    count += localCount;
+                    params.target += localCount;
                 }
 
-                console.log('Added ' + localCount + ' items from ' + responseWiki.server + ':' + responseCategory);
+                console.log('Added ' + localCount + ' items from ' + responseWiki.server + ':' + responseCategory + '; target now ' + params.target);
+
             });
         };
     });
