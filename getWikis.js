@@ -6,56 +6,66 @@
 
 // Modules
 
+var Q = require('q');
 var mysql = require('mysql');
-
 
 // Local files
 
 var config = require('./config');
 
+/**
+ * Get a list of all Wikimedia wikis from the metadata table of the Tool Labs database.
+ * @return {Promise} A promise that contains a dictionary of all Wikimedia wikis when fulfilled.
+ */
 
-// Set up MySQL connection
+function getWikis(){
 
-// The metadata database is available in all slices, so we use the alias for a small wiki, which is expected to be under less load than the slices used for bigger wikis.
+    // Set up MySQL connection
+    // The metadata database is available in all slices, so we use the alias for a small wiki, which is expected to be under less load than the slices used for bigger wikis.
 
-var connection = mysql.createConnection({
-    host: 'kgwiki.labsdb',
-    user: config.mysql.user,
-    password: config.mysql.password,
-    database: 'meta_p'
-});
-
-
-// Build the query
-// TODO later: make the query more specific based on the parameters given by the user (e.g. exclude closed wiki, only return wikis with VisualEditor, etc.)
-
-var query = 'SELECT * FROM wiki;';
-
-function getWikis(done){
-
-    connection.connect(function(err) {
-        if (err) throw err;
+    var connection = mysql.createConnection({
+        host: 'kgwiki.labsdb',
+        user: config.mysql.user,
+        password: config.mysql.password,
+        database: 'meta_p'
     });
 
-    connection.query(query, function(err, rows, fields){
-        if (err) throw err;
+
+    // Build the query
+    // TODO later: make the query more specific based on the parameters given by the user (e.g. exclude closed wiki, only return wikis with VisualEditor, etc.)
+
+    var query = 'SELECT * FROM wiki;';
+
+
+    // Connect, query and close the connection when we're done
+
+    Q.ninvoke(connection, 'connect');
+
+    return Q.ninvoke(connection, 'query', query)
+    .then(function cleanUpRows(rows) {
+
+        rows = rows[0];
+
         console.log('Received ' + rows.length + ' wikis.');
 
         var wikis = {};
 
+        // convert the array to an object, using the dbnames as keys
         for (var wiki in rows) {
-            // convert the array to an object, using the dbnames as keys
             wikis[rows[wiki]['dbname']] = rows[wiki];
         };
 
-        done(wikis);
-    });
+        return wikis;
 
-    connection.end(function(err) {
-        if (err) throw err;
+    })
+    .fin(function closeConnection() {
+        return Q.ninvoke(connection, 'end')
     });
 }
 
-//getWikis();
+getWikis()
+.then(function (value) {
+    console.log(value);
+});
 
-exports.getWikis = getWikis;
+//exports.getWikis = getWikis;
