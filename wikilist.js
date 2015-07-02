@@ -1,7 +1,9 @@
 'use strict';
 
-// Get a set of wikis based on a few parameters.
-// Extracts the list of wikis from the Wikimedia Tool Labs metadata database (meta_p), and returns information about those wikis, to be used in another program; for example, in a program that iterates over a selection of wikis to perform a global analysis.
+/**
+ * This module provides tools to get information about a set of wikis (ideally based on a few parameters). If possible, it extracts the list of wikis from the Wikimedia Tool Labs metadata database (meta_p), and returns information about those wikis, to be used in another program; for example, in a program that iterates over a selection of wikis to perform a global analysis.
+ *
+ */
 
 
 // Modules
