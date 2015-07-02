@@ -46,7 +46,7 @@ function count(wikilist) {
         }
     };
 
-    // Count the number of free files in flat categories across wiki, and add it to the 'free' tally
+    // Count the number of free files in flat categories across wikis, and add it to the 'free' tally.
 
     return cnt.countItemsGlobal(
         wikilist,
@@ -60,12 +60,51 @@ function count(wikilist) {
         freedom['free']['countedWikis'] = freedom['free']['countedWikis'].concat(countedWikis);
         return freedom;
     })
+
+    // Count the number of unfree files in flat categories across wikis, and add it to the 'unfree' tally.
+
     .then(function () {
         return cnt.countItemsGlobal(
             wikilist,
             {
                 qItem: 'Q6811831', // 'Category:All non-free media'
                 recurse: false,
+                exclude: []
+            })
+        .spread(function (globalCount, countedWikis) {
+            freedom['unfree']['count'] += globalCount;
+            freedom['unfree']['countedWikis'] = freedom['unfree']['countedWikis'].concat(countedWikis);
+            return freedom;
+        });
+    })
+
+    // Count the number of free files in hierarchical categories across wikis, and add it to the 'free' tally.
+    // This doesn't actually recurse yet.
+
+    .then(function () {
+        return cnt.countItemsGlobal(
+            wikilist,
+            {
+                qItem: 'Q7142221', // 'Category:Wikipedia free files', but also includes [[c:Category:Free licenses]]
+                recurse: true,
+                exclude: []
+            })
+        .spread(function (globalCount, countedWikis) {
+            freedom['free']['count'] += globalCount;
+            freedom['free']['countedWikis'] = freedom['free']['countedWikis'].concat(countedWikis);
+            return freedom;
+        });
+    })
+
+    // Count the number of unfree files in hierarchical categories across wikis, and add it to the 'unfree' tally.
+    // This doesn't actually recurse yet.
+
+    .then(function () {
+        return cnt.countItemsGlobal(
+            wikilist,
+            {
+                qItem: 'Q6805039', // 'Category:Wikipedia non-free files', but also includes [[c:Category:Unfree copyright statuses]]
+                recurse: true,
                 exclude: []
             })
         .spread(function (globalCount, countedWikis) {
