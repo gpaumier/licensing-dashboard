@@ -60,9 +60,20 @@ function count(wikilist) {
         freedom['free']['countedWikis'] = freedom['free']['countedWikis'].concat(countedWikis);
         return freedom;
     })
-
-
-
+    .then(function () {
+        return cnt.countItemsGlobal(
+            wikilist,
+            {
+                qItem: 'Q6811831', // 'Category:All non-free media'
+                recurse: false,
+                exclude: []
+            })
+        .spread(function (globalCount, countedWikis) {
+            freedom['unfree']['count'] += globalCount;
+            freedom['unfree']['countedWikis'] = freedom['unfree']['countedWikis'].concat(countedWikis);
+            return freedom;
+        });
+    });
 }
 
 exports.count = count;
@@ -79,4 +90,4 @@ function testCount(){
 
 }
 
-// testCount();
+testCount();
