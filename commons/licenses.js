@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Get all the license templates from Commons
+ * Get license templates from Commons
  */
 
 var Q = require('q');
@@ -10,12 +10,13 @@ var apiUtils = require('../apiUtils');
 var promiseUtils = require('../promiseUtils')
 
 /**
- * Go through https://commons.wikimedia.org/wiki/Category:License_tags and collect all templates in that category and recursively through its subcategories.
+ * Go through a category of license templates, and collect all templates in that category and recursively through its subcategories.
  *
+ * @param {String} parentCategory   The top category from which we start exploring. In most cases, this will be 'Category:License_tags', but in some cases we might want to start somewhere else (e.g. start from a low-level category to get a reduced number of license tags, if we're debugging and don't actually need the full list). This must include the 'Category:' prefix.
  * @return {Promise} A promise that contains an array of strings representing the title of the license templates we collected.
  */
 
-function getLicenses() {
+function getLicenses(parentCategory) {
 
     var commonswiki = new mw({
         server: 'commons.wikimedia.org',
@@ -23,7 +24,7 @@ function getLicenses() {
     });
 
     var templates = [];
-    var categoriesToExplore = ['Category:License_tags']; // Parent category from which we recurse.
+    var categoriesToExplore = [parentCategory]; // Parent category from which we recurse.
 
     // Blacklist: If/when we find those categories, we shouldn't recurse inside them because they're not actually licenses. Oh, the joys of a messy category tree.
 
@@ -85,11 +86,36 @@ function getLicenses() {
 
 }
 
+exports.getLicenses = getLicenses;
+
+/**
+ * Simple test function until we write some proper automated tests
+ */
+
 function testGetLicenses() {
-    return getLicenses()
+    //return getLicenses('Category:License_tags')
+    return getLicenses('Category:License_tags_for_transferred_copyright‎')
     .then(function (result) {
         console.log(result);
     });
 }
 
-testGetLicenses();
+//testGetLicenses();
+
+/**
+ * Get the list of licenses from Commons, and only keep those that are a subpage (i.e. they have a '/' in their name). This is mostly for maintenance, as those are probably false positives. Identifying them is a prerequisite to then assessing and fixing them on Commons.
+ */
+
+function printSubpageLicenses() {
+    return getLicenses()
+    .then(function (result) {
+
+        for (var template of result) {
+            if (template.indexOf('/') != -1) {
+                console.log(template);
+            };
+        };
+    });
+}
+
+// printSubpageLicenses();
