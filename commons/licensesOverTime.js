@@ -4,6 +4,7 @@
 
 var Q = require('q');
 var mysql = require('mysql');
+var fs = require('fs');
 
 // Local files
 
@@ -93,8 +94,8 @@ function getLicensesByYear(licenses) {
 
             .then(function (count) {
                 result[license][interval] = count;
-            })
-        })
+            });
+        });
     })
     .then(function () {
         return result;
@@ -103,7 +104,7 @@ function getLicensesByYear(licenses) {
     // We're all done with the SQL queries; close the connection.
 
     .fin(function closeConnection() {
-        Q.ninvoke(connection, 'end')
+        Q.ninvoke(connection, 'end');
     });
 }
 
@@ -111,7 +112,7 @@ function getLicensesByYear(licenses) {
 exports.getLicensesByYear = getLicensesByYear;
 
 
-function testGetLicensesByYear () {
+function testGetLicensesByYear() {
     return licenseList.getLicenses('Category:License_tags_for_transferred_copyright‎')
     .then(getLicensesByYear)
     .then(function (result) {
@@ -121,4 +122,15 @@ function testGetLicensesByYear () {
 }
 
 
-testGetLicensesByYear();
+// testGetLicensesByYear();
+
+function allLicensesByYearToJSON() {
+    return licenseList.getLicenses('Category:License_tags')
+    .then(getLicensesByYear)
+    .then(function (result) {
+        return fs.writeFileSync('commons/licensesOverTime.json', JSON.stringify(result), 'UTF-8');
+    })
+    .done();
+}
+
+allLicensesByYearToJSON()
