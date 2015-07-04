@@ -24,8 +24,6 @@ var promiseUtils = require('../promiseUtils');
 
 function getLicensesByYear(licenses) {
 
-    var result = {};
-
     // Prepare the licenses: strip them of the 'Template:' namespace prefix.
 
     for (var index in licenses) {
@@ -40,7 +38,7 @@ function getLicensesByYear(licenses) {
         intervals.push(i);
     };
 
-    // Prepare the database query.
+    // Prepare the database query
 
     var connection = mysql.createConnection({
         host: 'commonswiki.labsdb',
@@ -49,44 +47,61 @@ function getLicensesByYear(licenses) {
         database: 'commonswiki_p'
     });
 
-    var emptyQuery = dbUtils.getQuery('/commons/licensesOverTime.sql');
-
     Q.ninvoke(connection, 'connect');
 
-    /*
-        for (var template of licenses) {
-        for (var interval of intervals) {
+    // Initialize the recursion variables
 
-        }
-    }*/
+    var emptyQuery = dbUtils.getQuery('/commons/licensesOverTime.sql');
 
-    var intervalIndex = 0;
-    var end = intervals.length;
-    result[licenses[0]] = {};
+    var endLicenseRecursion = licenses.length;
+    var endIntervalRecursion = intervals.length;
 
-    return promiseUtils.promiseWhile(function () { return intervalIndex < end; }, function () {
+    var licenseIndex = 0;
+    var result = {};
 
-        var interval = intervals[intervalIndex];
-        intervalIndex += 1;
+    // Recurse through the list of licenses
 
-        var inserts = [interval + '%', licenses[0]];
-        var query = mysql.format(emptyQuery, inserts);
+    return promiseUtils.promiseWhile(function () { return licenseIndex < endLicenseRecursion; }, function () {
 
-        console.log(query);
+        var license = licenses[licenseIndex];
+        licenseIndex += 1;
+        result[license] = {};
 
-        return Q.ninvoke(connection, 'query', query)
-        .then(function (rows) {
-            rows = rows[0][0]['count(page_title)'];
-            console.log(rows);
-            return rows;
-        })
-        .then(function (count) {
-            result[licenses[0]][interval] = count;
+        var intervalIndex = 0;
+
+        // Recurse through the intervals
+
+        return promiseUtils.promiseWhile(function () { return intervalIndex < endIntervalRecursion; }, function () {
+
+            var interval = intervals[intervalIndex];
+            intervalIndex += 1;
+
+            // Build the SQL query for this interval and this template
+
+            var inserts = [interval + '%', license];
+            var query = mysql.format(emptyQuery, inserts);
+
+            // Run the SQL query for this interval and this template
+
+            return Q.ninvoke(connection, 'query', query)
+            .then(function (rows) {
+                rows = rows[0][0]['count(page_title)'];
+                return rows;
+            })
+
+            // Save the count for this interval and this template into the master 'result'
+
+            .then(function (count) {
+                result[license][interval] = count;
+            })
         })
     })
     .then(function () {
         return result;
     })
+
+    // We're all done with the SQL queries; close the connection.
+
     .fin(function closeConnection() {
         Q.ninvoke(connection, 'end')
     });
