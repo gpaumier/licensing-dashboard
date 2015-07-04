@@ -8,7 +8,6 @@ var fs = require('fs');
  */
 
 function getQuery(path) {
-    console.log(__dirname + path);
     return fs.readFileSync(__dirname + path, 'UTF-8');
 }
 
