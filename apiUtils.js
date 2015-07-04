@@ -182,3 +182,64 @@ function testGetWikidataSitelinksByID(){
 }
 
 //testGetWikidataSitelinksByID();
+
+
+/**
+ * Query the MediaWiki API of a given wiki and get a list of pages that belong to a category.
+ * @param {Object} wiki     A mw object representing the wiki.
+ * @param {String} category    The name of the category.
+ * @param {String} namespaces   The namespaces of the pages we want to retrieve, separated by a pipe character.
+ * @return {Promise}        A promise that contains the requested information if fulfilled.
+ */
+
+function getCategoryMembers(wiki, category, namespaces) {
+
+    var listParams = {
+        action: 'query',
+        list: 'categorymembers',
+        cmtitle: category,
+        cmprop: 'title',
+        cmnamespace: namespaces,
+        cmlimit: '500'
+    };
+
+    var deferred = Q.defer();
+
+    wiki.api.call(listParams, function(error, info, next, data) {
+
+        // TODO: handle 'next'
+
+        if (error) {
+            deferred.reject(new Error(error));
+        } else  {
+            deferred.resolve(info);
+        }
+    })
+
+    return deferred.promise
+    .then(function (info) {
+        return [info.categorymembers, wiki];
+    });
+}
+
+
+exports.getCategoryMembers = getCategoryMembers;
+
+function testGetCategoryMembers(){
+    var commonswiki = new mw({
+        server: 'commons.wikimedia.org',
+        path: '/w',
+        debug: true
+    });
+
+    getCategoryMembers(
+        commonswiki,
+        'Category:License_tags',
+        '10|14' // Templates and (sub)categories
+    )
+    .then(function (result) {
+        console.log(result);
+    });
+}
+
+// testGetCategoryMembers();
