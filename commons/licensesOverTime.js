@@ -65,6 +65,7 @@ function getLicensesByYear(licenses) {
     return promiseUtils.promiseWhile(function () { return doIContinue; }, function () {
 
         doIContinue = false;
+        result[licenses[0]] = {}
 
         var inserts = [intervals[11] + '%', licenses[0]];
         query = mysql.format(query, inserts);
@@ -78,10 +79,12 @@ function getLicensesByYear(licenses) {
             return rows;
         })
         .then(function (count) {
-            result[licenses[0]][interval] = count;
-            console.log(result);
-            return result;
+            result[licenses[0]][intervals[11]] = count;
         })
+    })
+    .then(function () {
+        console.log(result);
+        return result;
     })
     .fin(function closeConnection() {
         Q.ninvoke(connection, 'end')
@@ -97,7 +100,8 @@ function testGetLicensesByYear () {
     .then(getLicensesByYear)
     .then(function (result) {
         console.log(result);
-    });
+    })
+    .done();
 }
 
 
