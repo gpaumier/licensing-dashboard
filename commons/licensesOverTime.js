@@ -49,7 +49,7 @@ function getLicensesByYear(licenses) {
         database: 'commonswiki_p'
     });
 
-    var query = dbUtils.getQuery('/commons/licensesOverTime.sql');
+    var emptyQuery = dbUtils.getQuery('/commons/licensesOverTime.sql');
 
     Q.ninvoke(connection, 'connect');
 
@@ -60,15 +60,17 @@ function getLicensesByYear(licenses) {
         }
     }*/
 
-    var doIContinue = true;
+    var intervalIndex = 0;
+    var end = intervals.length;
+    result[licenses[0]] = {};
 
-    return promiseUtils.promiseWhile(function () { return doIContinue; }, function () {
+    return promiseUtils.promiseWhile(function () { return intervalIndex < end; }, function () {
 
-        doIContinue = false;
-        result[licenses[0]] = {}
+        var interval = intervals[intervalIndex];
+        intervalIndex += 1;
 
-        var inserts = [intervals[11] + '%', licenses[0]];
-        query = mysql.format(query, inserts);
+        var inserts = [interval + '%', licenses[0]];
+        var query = mysql.format(emptyQuery, inserts);
 
         console.log(query);
 
@@ -79,11 +81,10 @@ function getLicensesByYear(licenses) {
             return rows;
         })
         .then(function (count) {
-            result[licenses[0]][intervals[11]] = count;
+            result[licenses[0]][interval] = count;
         })
     })
     .then(function () {
-        console.log(result);
         return result;
     })
     .fin(function closeConnection() {
