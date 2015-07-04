@@ -80,7 +80,7 @@ function getLicenses() {
         })
     })
     .then(function () {
-        return templates;
+        return templates.sort();
     });
 
 }
