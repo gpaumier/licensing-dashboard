@@ -10,6 +10,7 @@ var mysql = require('mysql');
 var licenseList = require('./licenses');
 var dbUtils = require('../dbUtils');
 var config = require('../config');
+var promiseUtils = require('../promiseUtils');
 
 
 /**
@@ -22,6 +23,8 @@ var config = require('../config');
  */
 
 function getLicensesByYear(licenses) {
+
+    var result = {};
 
     // Prepare the licenses: strip them of the 'Template:' namespace prefix.
 
@@ -48,6 +51,8 @@ function getLicensesByYear(licenses) {
 
     var query = dbUtils.getQuery('/commons/licensesOverTime.sql');
 
+    Q.ninvoke(connection, 'connect');
+
     /*
         for (var template of licenses) {
         for (var interval of intervals) {
@@ -55,24 +60,37 @@ function getLicensesByYear(licenses) {
         }
     }*/
 
-    var inserts = [intervals[11] + '%', licenses[0]];
-    query = mysql.format(query, inserts);
+    var doIContinue = true;
 
-    console.log(query);
+    return promiseUtils.promiseWhile(function () { return doIContinue; }, function () {
 
-    Q.ninvoke(connection, 'connect');
+        doIContinue = false;
 
-    return Q.ninvoke(connection, 'query', query)
-    .then(function (rows) {
-        rows = rows[0][0]['count(page_title)'];
-        return rows;
+        var inserts = [intervals[11] + '%', licenses[0]];
+        query = mysql.format(query, inserts);
+
+        console.log(query);
+
+        return Q.ninvoke(connection, 'query', query)
+        .then(function (rows) {
+            rows = rows[0][0]['count(page_title)'];
+            console.log(rows);
+            return rows;
+        })
+        .then(function (count) {
+            result[licenses[0]][interval] = count;
+            console.log(result);
+            return result;
+        })
     })
     .fin(function closeConnection() {
         Q.ninvoke(connection, 'end')
     });
 }
 
+
 exports.getLicensesByYear = getLicensesByYear;
+
 
 function testGetLicensesByYear () {
     return licenseList.getLicenses('Category:License_tags_for_transferred_copyright‎')
@@ -81,5 +99,6 @@ function testGetLicensesByYear () {
         console.log(result);
     });
 }
+
 
 testGetLicensesByYear();

@@ -5,5 +5,6 @@ SELECT count(page_title)
         AND image.img_timestamp LIKE ?
         AND page_id IN (
             SELECT DISTINCT(tl_from) FROM templatelinks
-                    WHERE tl_title LIKE ?
+                    WHERE tl_namespace = 10
+                        AND tl_title LIKE ?
             );
