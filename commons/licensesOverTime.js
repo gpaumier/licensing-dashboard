@@ -64,7 +64,7 @@ function getLicensesByYear(licenses) {
 
     return promiseUtils.promiseWhile(function () { return licenseIndex < endLicenseRecursion; }, function () {
 
-        var license = licenses[licenseIndex].replace(' ', '_'); // https://phabricator.wikimedia.org/P879#4143
+        var license = licenses[licenseIndex].replace(/ /g, '_'); // https://phabricator.wikimedia.org/P879#4143
 
         licenseIndex += 1;
         result[license] = {};
