@@ -1,0 +1,25 @@
+{
+  "name": "licensing-dashboard",
+  "version": "0.1.0",
+  "description": "A tool to display information about copyright and licensing on Wikimedia sites",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gpaumier/licensing-dashboard.git"
+  },
+  "keywords": [
+    "wikimedia"
+  ],
+  "author": "Guillaume Paumier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gpaumier/licensing-dashboard/issues"
+  },
+  "homepage": "https://github.com/gpaumier/licensing-dashboard#readme",
+  "dependencies": {
+    "moment": "^2.10.3"
+  },
+  "devDependencies": {
+    "css-brunch": "^1.7.0",
+    "javascript-brunch": "^1.7.1"
+  }
+}
