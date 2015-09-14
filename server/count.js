@@ -15,7 +15,12 @@ var wl = require('./wikilist');
 
 
 /**
- * Count the number of files in a category across wiki using the category's Wikidata ID.
+ * Count the number of files in categories across wikis using the Wikidata ID shared by that set of categories.
+ *
+ * If the categories are flat (recurse = false), we just need to get the number of files they contain. If they're hierarchical (recurse = true), we need to go through the category tree and identify all their subcategories, at any level, and count the number of files in those.
+ *
+ * However, we then run into issues like duplicate categorization (a file can be present in several of those categories) and nonlinear category trees (categories might include themselves down the line, or include subcategories at some point that are not instances of the original category.)
+ *
  * @param {Object} params An object containing the parameters for the count.
  * @param {Object} params.wikilist An object serving as a dictionary that provides basic information about Wikimedia wikis.
  * @param {String} params.qItem The ID of the Wikidata Q item we're using as a starting point for the categories where to count.

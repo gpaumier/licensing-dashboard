@@ -1,11 +1,8 @@
 {
-  "name": "licensing-dashboard",
+  "name": "licensing-dashboard-server",
   "version": "0.1.0",
-  "description": "A dashboard showing information about Licensing on Wikimedia sites",
+  "description": "A  script to extract information about copyright and licensing on Wikimedia sites",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gpaumier/licensing-dashboard.git"
