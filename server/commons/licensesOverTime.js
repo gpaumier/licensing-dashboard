@@ -67,7 +67,10 @@ function getLicensesByYear(licenses) {
         var license = licenses[licenseIndex].replace(/ /g, '_'); // https://phabricator.wikimedia.org/P879#4143
 
         licenseIndex += 1;
-        result[license] = {};
+        result[license] = {
+            'license': license,
+            'years': []
+        };
 
         var intervalIndex = 0;
 
@@ -94,7 +97,10 @@ function getLicensesByYear(licenses) {
             // Save the count for this interval and this template into the master 'result'
 
             .then(function (count) {
-                result[license][interval] = count;
+                result[license]['years'].push({
+                    'year': interval,
+                    'count': count
+                })
             });
         });
     })
