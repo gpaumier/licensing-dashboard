@@ -1,3 +1,4 @@
+var drawCharts = require('drawCharts');
 
 /**
  * Things to do:
@@ -6,7 +7,6 @@
  * * Calculate the total number of files with each template
  *   * Get the top 10 / 100
  * * Define regular expressions to group templates by category: e.g. (cc-*|PD-CC-*) => Creative Commons
- * * Calculate the total number of template transclusion per year (for normalization). This isn't the total number of files since a file may transclude several templates.
  */
 
 function preprocess(JSONFilename) {
@@ -14,9 +14,10 @@ function preprocess(JSONFilename) {
 
         console.log(json);
 
-        var totals = {
+        var preprocessed = {
             'byLicense': {},
-            'byYear': {}
+            'byYear': {},
+            'unusedTemplates': []
         };
 
         // Convert data to D3 maps, recursively
@@ -26,11 +27,34 @@ function preprocess(JSONFilename) {
             this.set(license, d3.map(years));
         });
 
-        data.forEach(function (license, years) {
-            totals['byLicense'][license] = d3.sum(years.values());
-        })
+        // Calculate how many files have each license
+        // Also remove templates with no transclusions
 
-        console.log(totals);
+        preprocessed['uniqueTemplates'] = data.keys().length;
+
+        data.forEach(function (license, years) {
+            preprocessed['byLicense'][license] = d3.sum(years.values());
+            if (!preprocessed['byLicense'][license]) {
+                data.remove(license);
+                preprocessed['unusedTemplates'].push(license);
+            };
+        });
+
+        preprocessed['uniqueTranscludedTemplates'] = data.keys().length;
+        preprocessed['licensesOverTime'] = data;
+
+        // Calculate how many licenses are trancluded by files uploaded each year
+
+        for (var year = 2004; year < 2016; year++) {
+            preprocessed['byYear'][year] = 0;
+
+            data.forEach(function (license, years) {
+                preprocessed['byYear'][year] += years.get(year);
+            });
+        };
+
+        drawCharts.drawAll(preprocessed);
+
     });
 }
 module.exports.preprocess = preprocess;
