@@ -135,7 +135,7 @@ function allLicensesByYearToJSON() {
     return licenseList.getLicenses('Category:License_tags')
     .then(getLicensesByYear)
     .then(function (result) {
-        return fs.writeFileSync('commons/licensesOverTime.json', JSON.stringify(result), 'UTF-8');
+        return fs.writeFileSync('licensesOverTime.json', JSON.stringify(result), 'UTF-8');
     })
     .done();
 }
